@@ -1,0 +1,35 @@
+[gd_scene load_steps=5 format=3 uid="uid://l6obcsc01trr"]
+
+[ext_resource type="Script" path="res://Scripts/interactable.gd" id="1_tdk8e"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_h5yfs"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_ukr12"]
+size = Vector3(10, 10, 10)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_w63h8"]
+
+[node name="Cube" type="RigidBody3D"]
+collision_layer = 4
+collision_mask = 7
+script = ExtResource("1_tdk8e")
+DRAGGABLE = true
+HOLDABLE = true
+NAME = "Cubana"
+
+[node name="HoverZone" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="HoverZone"]
+shape = SubResource("BoxShape3D_h5yfs")
+
+[node name="Joint" type="Node3D" parent="."]
+transform = Transform3D(0.632389, 0.322914, 0.704139, -0.454768, 0.89061, 0, -0.627113, -0.32022, 0.710063, 0.244128, -0.130866, -0.00792342)
+
+[node name="Mesh" type="Node3D" parent="."]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Mesh"]
+mesh = SubResource("BoxMesh_ukr12")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_w63h8")

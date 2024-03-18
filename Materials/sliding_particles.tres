@@ -1,0 +1,38 @@
+[gd_resource type="ParticleProcessMaterial" load_steps=7 format=3 uid="uid://clab7gx82pt75"]
+
+[sub_resource type="Curve" id="Curve_ctpls"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.320388, 1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="CurveXYZTexture" id="CurveXYZTexture_rifo1"]
+curve_y = SubResource("Curve_ctpls")
+
+[sub_resource type="Curve" id="Curve_x03fc"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.0796116, 0.32243), 0.325208, 0.325208, 0, 0, Vector2(0.790291, 0.336449), -0.707806, -0.707806, 0, 0, Vector2(0.99999, 0), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 1, 0]
+point_count = 5
+
+[sub_resource type="CurveTexture" id="CurveTexture_g54ct"]
+curve = SubResource("Curve_x03fc")
+
+[sub_resource type="Curve" id="Curve_tti2c"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 2.47793, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_6o3yx"]
+curve = SubResource("Curve_tti2c")
+
+[resource]
+lifetime_randomness = 0.7
+emission_shape = 3
+emission_box_extents = Vector3(0.2, 0, 0.2)
+direction = Vector3(0, -1, 0)
+spread = 0.0
+initial_velocity_max = 1.0
+directional_velocity_min = 1.0
+directional_velocity_max = 1.0
+directional_velocity_curve = SubResource("CurveXYZTexture_rifo1")
+gravity = Vector3(0, 0, 0)
+scale_curve = SubResource("CurveTexture_g54ct")
+turbulence_noise_scale = 6.0
+turbulence_noise_speed_random = 1.5
+turbulence_influence_over_life = SubResource("CurveTexture_6o3yx")

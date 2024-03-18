@@ -1,0 +1,34 @@
+[gd_scene load_steps=5 format=3 uid="uid://bkh244ybrnt3j"]
+
+[ext_resource type="Script" path="res://Scripts/player_character.gd" id="1_t2afb"]
+[ext_resource type="Material" uid="uid://cue16i6jlwjtl" path="res://Assets/textures/GridOrangeTile.tres" id="2_nrduh"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_efn4y"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_bs6ld"]
+material = ExtResource("2_nrduh")
+
+[node name="PlayerCharacter" type="CharacterBody3D"]
+collision_layer = 2
+floor_stop_on_slope = false
+floor_snap_length = 0.5
+script = ExtResource("1_t2afb")
+
+[node name="PlayerCollision" type="CollisionShape3D" parent="."]
+shape = SubResource("CylinderShape3D_efn4y")
+
+[node name="PlayerMesh" type="MeshInstance3D" parent="."]
+layers = 2
+mesh = SubResource("CapsuleMesh_bs6ld")
+
+[node name="CameraNeck" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+
+[node name="CameraHead" type="Node3D" parent="CameraNeck"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+top_level = true
+
+[node name="PlayerCamera" type="Camera3D" parent="CameraNeck/CameraHead"]
+cull_mask = 1048573
+current = true
+fov = 90.0

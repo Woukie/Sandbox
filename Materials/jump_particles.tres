@@ -1,0 +1,20 @@
+[gd_resource type="ParticleProcessMaterial" load_steps=3 format=3 uid="uid://ys61museu075"]
+
+[sub_resource type="Curve" id="Curve_jk8x4"]
+_data = [Vector2(0, 0.434579), 0.0, 0.0, 0, 0, Vector2(0.190291, 0.883178), 0.0, 0.0, 0, 0, Vector2(0.341748, 0.350467), 0.0, 0.0, 0, 0, Vector2(0.584466, 0.476636), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 5
+
+[sub_resource type="CurveTexture" id="CurveTexture_cmref"]
+curve = SubResource("Curve_jk8x4")
+
+[resource]
+lifetime_randomness = 0.75
+direction = Vector3(0, 1, 0)
+spread = 30.0
+initial_velocity_max = 3.0
+gravity = Vector3(0, 0, 0)
+damping_min = 2.0
+damping_max = 3.0
+scale_min = 0.5
+scale_max = 0.5
+scale_curve = SubResource("CurveTexture_cmref")

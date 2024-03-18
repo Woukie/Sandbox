@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://2kefwip5ivhp"]
+
+[ext_resource type="Shader" path="res://Shaders/puff.gdshader" id="1_51t8v"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_51t8v")
+shader_parameter/color = Vector4(1, 1, 1, 2)

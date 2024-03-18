@@ -1,0 +1,113 @@
+[gd_scene load_steps=9 format=3 uid="uid://bkh244ybrnt3j"]
+
+[ext_resource type="Script" path="res://Scripts/player_character.gd" id="1_t2afb"]
+[ext_resource type="Material" uid="uid://cue16i6jlwjtl" path="res://Assets/textures/GridOrangeTile.tres" id="2_nrduh"]
+[ext_resource type="Texture2D" uid="uid://yvagcxwjahkx" path="res://Assets/textures/Crosshair.png" id="3_82n8g"]
+[ext_resource type="FontFile" uid="uid://jvet37fu10vg" path="res://Assets/fonts/Ac437_IBM_VGA_9x16.ttf" id="5_c50vu"]
+[ext_resource type="Texture2D" uid="uid://bsomtjtuiulso" path="res://Assets/textures/Crosshair Active.png" id="5_itq7l"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_efn4y"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_bs6ld"]
+material = ExtResource("2_nrduh")
+
+[sub_resource type="Theme" id="Theme_kps3o"]
+default_font = ExtResource("5_c50vu")
+default_font_size = 40
+
+[node name="PlayerCharacter" type="CharacterBody3D"]
+collision_layer = 2
+floor_stop_on_slope = false
+floor_snap_length = 0.5
+script = ExtResource("1_t2afb")
+INACTIVE_CROSSHAIR = ExtResource("3_82n8g")
+ACTIVE_CROSSHAIR = ExtResource("5_itq7l")
+HOVER_MASK = 1
+DRAG_MASK = 1
+
+[node name="PlayerCollision" type="CollisionShape3D" parent="."]
+shape = SubResource("CylinderShape3D_efn4y")
+
+[node name="PlayerMesh" type="MeshInstance3D" parent="."]
+layers = 2
+mesh = SubResource("CapsuleMesh_bs6ld")
+
+[node name="CameraNeck" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+
+[node name="CameraHead" type="Node3D" parent="CameraNeck"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+top_level = true
+
+[node name="PlayerCamera" type="Camera3D" parent="CameraNeck/CameraHead"]
+cull_mask = 1048573
+current = true
+fov = 90.0
+
+[node name="Crosshair" type="CanvasLayer" parent="."]
+
+[node name="Control" type="Control" parent="Crosshair"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="Crosshair/Control"]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+texture = ExtResource("3_82n8g")
+
+[node name="Interactable" type="CanvasLayer" parent="."]
+
+[node name="Name" type="RichTextLabel" parent="Interactable"]
+texture_filter = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_top = 17.0
+offset_bottom = 57.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = SubResource("Theme_kps3o")
+text = "CUBANA"
+fit_content = true
+autowrap_mode = 0
+
+[node name="Interactions" type="RichTextLabel" parent="Interactable"]
+texture_filter = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -79.0
+offset_right = 197.0
+offset_bottom = 1.0
+grow_vertical = 0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = SubResource("Theme_kps3o")
+text = "DRAG
+HOLD
+"
+fit_content = true
+autowrap_mode = 0

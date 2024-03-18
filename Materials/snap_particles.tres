@@ -1,0 +1,21 @@
+[gd_resource type="ParticleProcessMaterial" load_steps=3 format=3 uid="uid://bnh1ieshe26s0"]
+
+[sub_resource type="Curve" id="Curve_tti2c"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 2.47793, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_6o3yx"]
+curve = SubResource("Curve_tti2c")
+
+[resource]
+lifetime_randomness = 0.9
+emission_shape = 3
+emission_box_extents = Vector3(0, 0.5, 0)
+direction = Vector3(0, 1, 0)
+spread = 0.0
+gravity = Vector3(0, 0, 0)
+damping_min = 10.0
+damping_max = 15.0
+turbulence_noise_scale = 6.0
+turbulence_noise_speed_random = 1.5
+turbulence_influence_over_life = SubResource("CurveTexture_6o3yx")

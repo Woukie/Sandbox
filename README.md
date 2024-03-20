@@ -16,5 +16,7 @@ This is my sandbox
 - Camera shake
 - Jumping
 - Interaction system
-- Dragging system
+- Holding interactables
+- Dragging interactables
+- Custom interaction support
 - Crouching

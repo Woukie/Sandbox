@@ -2,17 +2,18 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cx4nyymplyxdl"
-path.s3tc="res://.godot/imported/fifties_flr01.png-712501ff06f01fef43b19e2ef96e2971.s3tc.ctex"
+uid="uid://crq2sjj2i4jq5"
+path.s3tc="res://.godot/imported/shit fucking sofa_shit_fucking_sofa_dif.png-2a9eb051125fcf92d1777e97158ff4b7.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
+generator_parameters={}
 
 [deps]
 
-source_file="res://Assets/textures/stolen from half life/fifties_flr01.png"
-dest_files=["res://.godot/imported/fifties_flr01.png-712501ff06f01fef43b19e2ef96e2971.s3tc.ctex"]
+source_file="res://Assets/models/shit fucking sofa_shit_fucking_sofa_dif.png"
+dest_files=["res://.godot/imported/shit fucking sofa_shit_fucking_sofa_dif.png-2a9eb051125fcf92d1777e97158ff4b7.s3tc.ctex"]
 
 [params]
 

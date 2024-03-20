@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" path="res://Scripts/player_character.gd" id="1_t2afb"]
 [ext_resource type="Material" uid="uid://cue16i6jlwjtl" path="res://Assets/textures/GridOrangeTile.tres" id="2_nrduh"]
-[ext_resource type="Texture2D" uid="uid://yvagcxwjahkx" path="res://Assets/textures/Crosshair.png" id="3_82n8g"]
+[ext_resource type="Texture2D" uid="uid://bsomtjtuiulso" path="res://Assets/textures/Crosshair.png" id="3_82n8g"]
 [ext_resource type="FontFile" uid="uid://jvet37fu10vg" path="res://Assets/fonts/Ac437_IBM_VGA_9x16.ttf" id="5_c50vu"]
-[ext_resource type="Texture2D" uid="uid://bsomtjtuiulso" path="res://Assets/textures/Crosshair Active.png" id="5_itq7l"]
+[ext_resource type="Texture2D" uid="uid://yvagcxwjahkx" path="res://Assets/textures/Crosshair Active.png" id="5_itq7l"]
 [ext_resource type="PackedScene" uid="uid://daumxjq7jnjp8" path="res://addons/shaky_camera_3d/shaky_camera_3d.tscn" id="5_r4dn8"]
 [ext_resource type="Script" path="res://Scripts/line.gd" id="6_yigxd"]
 [ext_resource type="Material" uid="uid://bwcpuxsjfn8l7" path="res://Materials/line.tres" id="7_8xbrj"]
@@ -60,8 +60,8 @@ collision_mask = 5
 floor_stop_on_slope = false
 floor_snap_length = 0.5
 script = ExtResource("1_t2afb")
-INACTIVE_CROSSHAIR = ExtResource("3_82n8g")
-ACTIVE_CROSSHAIR = ExtResource("5_itq7l")
+INACTIVE_CROSSHAIR = ExtResource("5_itq7l")
+ACTIVE_CROSSHAIR = ExtResource("3_82n8g")
 HOVER_MASK = 1
 DRAG_MASK = 1
 
@@ -118,7 +118,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 6
 size_flags_vertical = 6
-texture = ExtResource("3_82n8g")
+texture = ExtResource("5_itq7l")
 
 [node name="Interactable" type="CanvasLayer" parent="."]
 
@@ -129,16 +129,13 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -51.0
 offset_top = 9.0
-offset_right = 51.0
 offset_bottom = 49.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme = SubResource("Theme_kps3o")
-text = "CUBANA"
 fit_content = true
 autowrap_mode = 0
 

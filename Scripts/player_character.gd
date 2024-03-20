@@ -38,8 +38,8 @@ extends CharacterBody3D
 @export var PLAYER_SPRINT_SPEED := 12.0			# Player's sprint speed.
 @export var JUMP_VELOCITY := 6.0				# Player's jump velocity.
 @export var CROUCH_BOOST := 2.0					# Velocity boost for crouching while sprinting.
-@export var LAND_BOOST := 3						# Velocity boost when landing crouched and fast.
-@export var LAND_BOOST_SPEED_REQUIREMENT := 5	# Velocity requirement for land boosting
+@export var LAND_BOOST := 3.0						# Velocity boost when landing crouched and fast.
+@export var LAND_BOOST_SPEED_REQUIREMENT := 5.0	# Velocity requirement for land boosting
 @export var JUMP_BOOST := 1.3					# Velocity boost for jumping while sprinting.
 @export var JUMP_COOLDOWN := 0.1				# Min time between jumps
 
@@ -59,16 +59,18 @@ extends CharacterBody3D
 @export var HOVER_DISTANCE := 3.0				# How close you have to be to an interactable to hover over it
 @export var INACTIVE_CROSSHAIR: Texture = null
 @export var ACTIVE_CROSSHAIR: Texture = null
+@export var GRAB_CROSSHAIR: Texture = null
 @export_flags_3d_physics var HOVER_MASK := collision_mask # Layers used for hover collision
 
 @export_category("Drag Settings")
-@export var DRAG_DISTANCE := 3.0				# How far you can carry an item in front of you
-@export var MAX_DRAG_DISTANCE := 3.0			# How far an item can be from the target position before it drops
-@export var MAX_DRAG_FORCE := 20				# How much force the player can exert onto the interactable they wish to drag
-@export var DRAG_ANGULAR_DRAG := 20				# How anular drag to apply to stop spinning
-@export var KP = 5.0  # Responsiveness (Proportional gain)
-@export var KI = 0.1   # Steady-state accuracy (Integral gain)
-@export var KD = 3.0   # Damping and oscillation reduction (Derivative gain)
+@export var MAX_DRAG_DISTANCE := 3.0			# Furthest you can carry an item in front of you
+@export var MIN_DRAG_DISTANCE := 1.0			# Closest you can carry an item in front of you
+@export var DRAG_SCROLL_SENSITIVITY := 0.3		# How much to change holding distnace by per scroll
+@export var DRAG_BREAK_DISTANCE := 3.0			# How far an item can be from the target position before it drops
+@export var MAX_DRAG_FORCE := 30.0				# How much force the player can exert onto the interactable they wish to drag
+@export var KP = 150.0  # Responsiveness (Proportional gain)
+@export var KI = 0.0   # Steady-state accuracy (Integral gain)
+@export var KD = 7.0   # Damping and oscillation reduction (Derivative gain)
 @export_flags_3d_physics var DRAG_MASK := collision_mask # Layers used for dragging items
 
 @export_category("Debug Settings")
@@ -105,7 +107,7 @@ var was_crouching := false				# If the player was crouching last frame
 var sprinting := false					# If player is sprinting this frame
 var jumping := false					# If player is jumping this frame
 var jumped_at := Time.get_unix_time_from_system() # Last time the player jumped in unix time (seconds)
-var previous_velocity := Vector3.ZERO		# Stores the velocity of the previous frame
+var previous_velocity := Vector3.ZERO	# Stores the velocity of the previous frame
 var old_velocity := Vector3.ZERO		# Stores the velocity of the frame before the previous
 
 var wish_dir := Vector3.ZERO			# Player input (WASD) direction
@@ -117,12 +119,13 @@ var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")		# Defau
 
 var hovering_over = null # Current interactable the player is looking and within range of
 var dragging: RigidBody3D = null # The interactable the player is dragging
+var holding: RigidBody3D = null # The interactable the player is holding
 var grab_offset = Vector3.ZERO # Where on the interactible did you grab it
-var grab_rotation = Vector3.ZERO
 
 # Specifically for dragging
 var integral: Vector3 = Vector3.ZERO  # Integral term accumulator
 var previous_error: Vector3 = Vector3.ZERO  # Previous error
+var drag_distance = 0
 
 #endregion
 
@@ -149,6 +152,9 @@ func _camera_input(event):
 	CAMERA_HEAD.rotate_y(y_rotation)
 	CAMERA_PITCH.rotate_x(deg_to_rad(-event.relative.y * MOUSE_SENSITIVITY))
 	CAMERA_PITCH.rotation.x = clamp(CAMERA_PITCH.rotation.x, deg_to_rad(-90), deg_to_rad(90))
+	
+	# Update held item to align with camera
+	realign_holding()
 
 # Function: Handle mouse mode toggling
 func _toggle_mouse_mode():
@@ -171,20 +177,21 @@ func _physics_process(delta):
 	
 	sprinting = Input.is_action_pressed("move_sprint")
 	
-	jumping = Input.is_action_pressed("move_jump") and is_grounded and Time.get_unix_time_from_system() - jumped_at > JUMP_COOLDOWN
+	jumping = Input.is_action_just_pressed("move_jump") and is_grounded and Time.get_unix_time_from_system() - jumped_at > JUMP_COOLDOWN
 	
 	# Get player input direction
 	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 	wish_dir = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	
 	# Handle Gravity
-	if !is_on_floor():
+	if !is_grounded:
 		velocity.y -= gravity * delta
 	
 	# Handle Jump
 	if jumping:
 		jumped_at = Time.get_unix_time_from_system()
-		PLAYER_CAMERA.multiplier_position = 0.25
+		PLAYER_CAMERA.multiplier_position = 0.1
+		PLAYER_CAMERA.multiplier_rotation = 0.1
 		PARTICLES_JUMP.restart()
 		PARTICLES_JUMP.set_emitting(true)
 		
@@ -224,12 +231,12 @@ func _physics_process(delta):
 	
 	target_velocity = velocity.lerp(target_velocity, antislip)
 	
-	if sprinting :
-		if is_crouching and is_grounded and !was_crouching:
+	if sprinting and is_grounded :
+		if is_crouching and !was_crouching:
 			target_velocity *= CROUCH_BOOST
 			PLAYER_CAMERA.multiplier_position = 1
 			PLAYER_CAMERA.multiplier_rotation = 0.5
-		if jumping and is_grounded and not is_crouching and velocity.length() > PLAYER_SPEED:
+		if jumping and not is_crouching and velocity.length() > PLAYER_SPEED:
 			PARTICLES_JUMP_BOOST.restart()
 			PARTICLES_JUMP_BOOST.set_emitting(true)
 			target_velocity *= JUMP_BOOST
@@ -254,8 +261,11 @@ func _physics_process(delta):
 	velocity.x = target_velocity.x
 	velocity.z = target_velocity.z
 	
-	PLAYER_CAMERA.multiplier_position *= 0.95
-	PLAYER_CAMERA.multiplier_rotation *= 0.93
+	var max_decay = 0.93
+	var min_decay = 0.8
+	
+	PLAYER_CAMERA.multiplier_position *= clamp(lerp(min_decay, max_decay, velocity.length() / PLAYER_SPEED), 0, max_decay)
+	PLAYER_CAMERA.multiplier_rotation *= clamp(lerp(min_decay, max_decay, velocity.length() / PLAYER_SPEED), 0, max_decay)
 	
 	# Stair step up
 	stair_step_up()
@@ -279,22 +289,65 @@ func _physics_process(delta):
 	# Interacting with the world
 	interact()
 	
+	realign_holding()
+	
 	old_velocity = previous_velocity
 	previous_velocity = velocity
 
+func realign_holding():
+	if holding:
+		holding.global_position = CAMERA_PITCH.to_global(holding.ALIGNED_OFFSET)
+		holding.global_rotation_degrees = CAMERA_PITCH.global_rotation_degrees
+		holding.rotate_object_local(Vector3.UP, holding.ALIGNED_ROTATION.y)
+
+# dragging and holding
 func interact():
 	var interactions = ""
 	var name = ""
 	
 	if hovering_over:
-		interactions += "DRAG" if hovering_over.DRAGGABLE else ""
-		interactions += "\nHOLD" if hovering_over.HOLDABLE else ""
+		interactions += "LMB: DRAG\n" if hovering_over.DRAGGABLE else ""
+		interactions += "E: HOLD\n" if hovering_over.HOLDABLE and !holding else ""
 		name = hovering_over.NAME
 		
-		if Input.is_action_pressed("interact_primary"):
+		# Extra interaction for hovering
+		var extra_interactions: Array[Interaction] = hovering_over.INTERACTIONS
+		for interaction in extra_interactions:
+			interactions += InputMap.action_get_events(interaction.input)[0].as_text() + ": " + interaction.display_name + "\n"
+			if Input.is_action_pressed(interaction.input):
+				hovering_over.on_interact(interaction)
+		
+		# Begin dragging something
+		if Input.is_action_pressed("interact_drag"):
 			dragging = hovering_over
+		
+		# Begin holding something
+		if !holding and Input.is_action_pressed("interact_hold"):
+			holding = hovering_over
+			
+			add_collision_exception_with(holding)
+			STAND_CAST.add_exception(holding)
+			
+			holding.freeze = true
 	
-	if not Input.is_action_pressed("interact_primary"):
+	if holding:
+		interactions += "Q: DROP\n" if holding else ""
+		
+		# Extra interaction for holding
+		var extra_interactions: Array[Interaction] = holding.HELD_INTERACTIONS
+		for interaction in extra_interactions:
+			interactions += InputMap.action_get_events(interaction.input)[0].as_text() + ": " + interaction.display_name + "\n"
+			if Input.is_action_pressed(interaction.input):
+				holding.on_held_interact(interaction)
+		
+		if Input.is_action_pressed("interact_drop"):
+			remove_collision_exception_with(holding)
+			STAND_CAST.remove_exception(holding)
+			
+			holding.freeze = false
+			holding = null
+	
+	if not Input.is_action_pressed("interact_drag"):
 		dragging = null
 	
 	INTERACTIONS.text = interactions
@@ -308,12 +361,20 @@ func drag():
 	
 	LINE.RENDERING = true
 	
+	if Input.is_action_just_pressed("drag_away"):
+		drag_distance += DRAG_SCROLL_SENSITIVITY
+	
+	if Input.is_action_just_pressed("drag_closer"):
+		drag_distance -= DRAG_SCROLL_SENSITIVITY
+	
+	drag_distance = clamp(drag_distance, MIN_DRAG_DISTANCE, MAX_DRAG_DISTANCE)
+	
 	var mouse_position = get_viewport().get_mouse_position()
 	var from = PLAYER_CAMERA.project_ray_origin(mouse_position)
 	# We prefer offset as we want target position to be influenced by surface normals, even if target is outside range
-	var offset = PLAYER_CAMERA.project_ray_normal(mouse_position) * DRAG_DISTANCE * 2 # Arbitrarilly large, will later clamp
+	var offset = PLAYER_CAMERA.project_ray_normal(mouse_position) * MAX_DRAG_DISTANCE * 2 # Arbitrarilly large, will later clamp
 	
-	var query = PhysicsRayQueryParameters3D.create(from, from + offset, HOVER_MASK, [self, dragging])
+	var query = PhysicsRayQueryParameters3D.create(from, from + offset, HOVER_MASK, [self, dragging] if !holding else [self, dragging, holding])
 	query.collide_with_areas = false
 	
 	var result = get_world_3d().direct_space_state.intersect_ray(query)
@@ -321,7 +382,7 @@ func drag():
 	if result.has("position"):
 		offset = result.position + result.normal * dragging.DRAG_HOVER_DISTANCE - from
 	
-	offset = offset.limit_length(DRAG_DISTANCE)
+	offset = offset.limit_length(drag_distance)
 	
 	var target_position = from + offset
 	var current_position = dragging.to_global(grab_offset)
@@ -330,7 +391,7 @@ func drag():
 	
 	var error = target_position - current_position
 	
-	if error.length() > MAX_DRAG_DISTANCE:
+	if error.length() > DRAG_BREAK_DISTANCE:
 		dragging = null
 		LINE.snap()
 		return
@@ -339,11 +400,13 @@ func drag():
 	
 	integral += error * delta  # delta is the time step since last update
 	var derivative = (error - previous_error) / delta
-	var required_force = KP * error + KI * integral + KD * derivative
+	
+	var required_force = KP * error + (KI * integral).limit_length(3.0) + KD * derivative
 	
 	previous_error = error
 	
 	required_force *= dragging.get_mass()
+	
 	required_force += dragging.get_mass() * gravity * Vector3.UP
 	
 	required_force = required_force.limit_length(MAX_DRAG_FORCE)
@@ -355,28 +418,25 @@ func drag():
 
 # Handle hovering over interactables
 func hover_interactables():
+	hovering_over = null
 	if dragging: 
-		hovering_over = null
+		TEXTURE_RECT.texture = GRAB_CROSSHAIR
 	else:
 		var mouse_position = get_viewport().get_mouse_position()
 		var from = PLAYER_CAMERA.project_ray_origin(mouse_position)
 		var to = from + PLAYER_CAMERA.project_ray_normal(mouse_position) * HOVER_DISTANCE
 		
-		var query = PhysicsRayQueryParameters3D.create(from, to, HOVER_MASK, [self])
-		query.collide_with_areas = true
+		var query = PhysicsRayQueryParameters3D.create(from, to, HOVER_MASK, [self, holding] if holding else [self])
 		
 		var result = get_world_3d().direct_space_state.intersect_ray(query)
 		
-		hovering_over = null
-		
 		if result.has("collider"):
-			var parent = result.collider.get_parent()
+			var parent = result.collider
 			if parent is interactable:
 				grab_offset = parent.to_local(result.position)
-				grab_rotation = parent.rotation
+				drag_distance = clamp(PLAYER_CAMERA.to_local(result.position).length(), MIN_DRAG_DISTANCE, MAX_DRAG_DISTANCE)
 				hovering_over = parent
-	
-	TEXTURE_RECT.texture = ACTIVE_CROSSHAIR if hovering_over else INACTIVE_CROSSHAIR
+		TEXTURE_RECT.texture = ACTIVE_CROSSHAIR if hovering_over else INACTIVE_CROSSHAIR
 
 # Handle crouching
 func crouch():
